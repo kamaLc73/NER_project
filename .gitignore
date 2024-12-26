@@ -3,3 +3,4 @@ conll2003
 
 *.keras
 training_example.ipynb
+*.json
