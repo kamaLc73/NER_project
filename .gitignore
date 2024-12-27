@@ -1,6 +1,3 @@
+__pycache__
 conll2003
-*.csv
-
-*.keras
-training_example.ipynb
-*.json
+env

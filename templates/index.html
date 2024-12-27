@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NER Model Prediction</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Named Entity Recognition</h1>
+        <form id="ner-form">
+            <label for="sentence">Enter a sentence:</label><br>
+            <input type="text" id="sentence" name="sentence" placeholder="Type your sentence here" required><br><br>
+            <button type="submit">Predict</button>
+        </form>
+        <div id="result" style="display: none;">
+            <h2>Results</h2>
+            <table id="output-table">
+                <thead>
+                    <tr>
+                        <th>Word</th>
+                        <th>Entity</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+        <div id="no-entities-message" style="display: none;">
+            <p>No entities found in the sentence.</p>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById("ner-form").addEventListener("submit", async function (event) {
+            event.preventDefault(); // Prevent form from reloading the page
+
+            const sentenceInput = document.getElementById("sentence").value;
+            const tableBody = document.querySelector("#output-table tbody");
+            const resultDiv = document.getElementById("result");
+            const noEntitiesMessage = document.getElementById("no-entities-message");
+
+            // Hide previous results
+            resultDiv.style.display = "none";
+            noEntitiesMessage.style.display = "none";
+
+            try {
+                const response = await fetch("/predict/", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/x-www-form-urlencoded",
+                    },
+                    body: new URLSearchParams({ sentence: sentenceInput }),
+                });
+
+                if (!response.ok) {
+                    throw new Error("Failed to fetch predictions");
+                }
+
+                const data = await response.json();
+
+                // Filter out entities with tag 'O'
+                const filteredEntities = data.entities.filter(([_, tag]) => tag !== "O");
+
+                if (filteredEntities.length === 0) {
+                    noEntitiesMessage.style.display = "block";
+                } else {
+                    tableBody.innerHTML = filteredEntities
+                        .map(([word, tag]) => `<tr><td>${word}</td><td>${tag}</td></tr>`)
+                        .join("");
+                    resultDiv.style.display = "block";
+                }
+            } catch (error) {
+                noEntitiesMessage.style.display = "block";
+                noEntitiesMessage.innerHTML = `<p>Error: ${error.message}</p>`;
+            }
+        });
+    </script>
+</body>
+</html>
