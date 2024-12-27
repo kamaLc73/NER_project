@@ -4,16 +4,25 @@ This project implements a Named Entity Recognition (NER) system using TensorFlow
 
 ## Project Contents
 
-- **`main.ipynb`**: Contains all the code for:
+- **`main_en.ipynb`**: Contains the code for:
   - Downloading and preparing the CoNLL 2003 dataset.
   - Data preprocessing (tokenization, encoding, padding).
   - Defining and training a bidirectional LSTM model.
   - Saving vocabularies and the trained model.
   - Example usage for predicting entities in sentences.
-
-- **`.gitignore`**: Excludes files such as datasets, model files, and training example notebooks from version control.
+- **FastAPI Web Application**:
+  - Allows users to input a sentence and get entity predictions dynamically through a styled web interface.
+  - Displays results in a table, excluding non-entity tags (`O`).
+- **`static/`**: Contains the CSS file for styling the web interface.
+- **`templates/`**: Contains the HTML template for the FastAPI app.
 
 ## Installation
+
+### Prerequisites
+
+Ensure Python 3.8+ is installed. You also need `pip` for installing dependencies.
+
+### Steps
 
 1. Clone the repository:
    ```bash
@@ -21,36 +30,74 @@ This project implements a Named Entity Recognition (NER) system using TensorFlow
    cd NER_project
    ```
 
-2. Install dependencies:
+2. Set up a virtual environment:
+   ```bash
+   python -m venv env
+   env\Scripts\Activate.ps1
+   ```
 
-    Make sure to install numpy and tensorflow.
+3. Install dependencies:
+   ```bash
+   pip install -r requirements.txt
+   ```
 
-3. Download and prepare the dataset:
-   Running the notebook will automatically download the CoNLL 2003 dataset and prepare it for training.
+4. Run the FastAPI application:
+   ```bash
+   uvicorn app:app --reload
+   ```
+
+5. Open a browser and navigate to:
+   ```
+   http://127.0.0.1:8000/
+   ```
+
+## Using the Web Interface
+
+- Input a sentence in the provided text box.
+- Click "Predict" to view recognized entities and their types.
+- Results are dynamically displayed in a table format below the form. Entities without labels (`O`) are excluded from the results.
 
 ## Model Training
 
-- Run the cells in the `main.ipynb` notebook:
+- Run the cells in the `main_en.ipynb` notebook to:
   - Preprocess the data.
-  - Define the model (Embedding, Bidirectional LSTM, TimeDistributed Dense).
-  - Train the model and evaluate its performance on the validation and test sets.
+  - Define and train the model (Embedding, Bidirectional LSTM, TimeDistributed Dense).
+  - Save the model and vocabularies.
 
-## Saved Outputs
+## Project Directory Structure
 
-- **Model**: The trained model is saved as `model_pretrained.keras`.
-- **Vocabularies**: The word and tag vocabularies are saved as `word_vocab.json` and `tag_vocab.json`, respectively.
+```
+NER_project/
+├── app.py                # FastAPI application
+├── README.md             # Project documentation
+├── main_en.ipynb         # Training notebook in English
+├── main_fr.ipynb         # Training notebook in French
+├── saves/                # Directory for saved model and vocabularies
+│   ├── model_pretrained.keras
+│   ├── tag_vocab.json
+│   └── word_vocab.json
+├── static/
+│   └── style.css         # CSS for web app styling
+├── templates/
+│   └── index.html        # HTML template for FastAPI app
+├── requirements.txt      # Python dependencies
+└── .gitignore            # Ignore unnecessary files
+```
 
-## Example Usage
-
-To use the trained model for predicting named entities:
+## Example Usage (Direct Python)
 
 1. Load the model and vocabularies:
    ```python
-   model = tf.keras.models.load_model("model_pretrained.keras")
-   with open("word_vocab.json", "r", encoding="utf-8") as f:
+   import tensorflow as tf
+   import json
+   from tensorflow.keras.preprocessing.sequence import pad_sequences
+
+   model = tf.keras.models.load_model("saves/model_pretrained.keras")
+   with open("saves/word_vocab.json", "r", encoding="utf-8") as f:
        word_vocab = json.load(f)
-   with open("tag_vocab.json", "r", encoding="utf-8") as f:
+   with open("saves/tag_vocab.json", "r", encoding="utf-8") as f:
        tag_vocab = json.load(f)
+   reverse_tag_vocab = {v: k for k, v in tag_vocab.items()}
    ```
 
 2. Predict entities in a sentence:
@@ -60,18 +107,13 @@ To use the trained model for predicting named entities:
        encoded_sentence = [word_vocab.get(word, word_vocab["<UNK>"]) for word in words]
        padded_sentence = pad_sequences([encoded_sentence], maxlen=124, padding="post")
        predictions = model.predict(padded_sentence)
-       predicted_tags = [np.argmax(pred) for pred in predictions[0]]
-       return list(zip(words, [reverse_tag_vocab[tag] for tag in predicted_tags]))
+       predicted_tags = [reverse_tag_vocab[np.argmax(pred)] for pred in predictions[0]]
+       return [(word, tag) for word, tag in zip(words, predicted_tags) if tag != "O"]
 
    sentence = "James Bond works at Google INC in New York."
-   entities = predict_entities(sentence)
-   print(entities)
+   print(predict_entities(sentence))
    ```
 
 ## Dataset
 
 The project uses the [CoNLL 2003 dataset](http://lnsigo.mipt.ru/export/datasets/conll2003.tar.gz), which is automatically downloaded and extracted during preprocessing.
-
-## Repository Link
-
-Find the project repository here: [NER Project on GitHub](https://github.com/kamaLc73/NER_project.git)
