@@ -25,28 +25,29 @@ Ensure Python 3.8+ is installed. You also need `pip` for installing dependencies
 ### Steps
 
 1. Clone the repository:
+
    ```bash
    git clone https://github.com/kamaLc73/NER_project.git
    cd NER_project
    ```
-
 2. Set up a virtual environment:
+
    ```bash
    python -m venv env
    env\Scripts\Activate.ps1
    ```
-
 3. Install dependencies:
+
    ```bash
    pip install -r requirements.txt
    ```
-
 4. Run the FastAPI application:
+
    ```bash
    uvicorn app:app --reload
    ```
-
 5. Open a browser and navigate to:
+
    ```
    http://127.0.0.1:8000/
    ```
@@ -87,6 +88,7 @@ NER_project/
 ## Example Usage (Direct Python)
 
 1. Load the model and vocabularies:
+
    ```python
    import tensorflow as tf
    import json
@@ -99,8 +101,8 @@ NER_project/
        tag_vocab = json.load(f)
    reverse_tag_vocab = {v: k for k, v in tag_vocab.items()}
    ```
-
 2. Predict entities in a sentence:
+
    ```python
    def predict_entities(sentence):
        words = sentence.split()
@@ -113,6 +115,11 @@ NER_project/
    sentence = "James Bond works at Google INC in New York."
    print(predict_entities(sentence))
    ```
+
+## Example Usage with fastAPI
+
+![Example](example.png)
+
 
 ## Dataset
 
