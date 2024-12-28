@@ -8,7 +8,6 @@ import numpy as np
 import tensorflow as tf
 from tensorflow.keras.preprocessing.sequence import pad_sequences
 
-# Load the pretrained model and vocabularies
 model = tf.keras.models.load_model("saves/model_pretrained.keras")
 
 with open("saves/word_vocab.json", "r", encoding="utf-8") as f:
@@ -18,15 +17,13 @@ with open("saves/tag_vocab.json", "r", encoding="utf-8") as f:
     tag_vocab = json.load(f)
 
 reverse_tag_vocab = {v: k for k, v in tag_vocab.items()}
-max_len = model.input_shape[1]  # Get max_len from the model input shape
+max_len = model.input_shape[1]  
 
-# Initialize FastAPI app
+
 app = FastAPI()
 
-# Mount static files (for CSS)
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
-# Set up Jinja2 templates
 templates = Jinja2Templates(directory="templates")
 
 class SentenceInput(BaseModel):
